@@ -10,12 +10,12 @@ class BankAccount:
         print(f"\nBank account created for: {acc_name}\nAcoount balance: £{balance:.2f}.")
     
     def check_balance(self):
-        # Display the current bank balance
-        print(f"\nYour current balance is: £{self.balance}")
+        # Display the current bank balance of the account holder
+        print(f"\n{self.acc_name}'s current balance is: £{self.balance}")
 
     def deposit(self, deposit_amount):
         # deposit funds into the account and update the balance
-        self.balance = self.balance + deposit_amount
+        self.balance += deposit_amount
         print(f"\nDepositing £{deposit_amount:.2f}...\nDeposit complete.\nAccout balance: £{self.balance:.2f}.")
 
     def enough_funds(self, amount):
@@ -29,8 +29,20 @@ class BankAccount:
         try:
             # checking/withdrawing funds
             self.enough_funds(amount)
-            self.balance = self.balance - amount
+            self.balance -= amount
             print(f"\nWithdrawing £{amount:.2f}...\nWithdrawal complete.\nAccount balance: £{self.balance:.2f}.")
         except FundsException as error:
             # handle cases of insufficient funds using our exception class
             print(f"\nAttempting to withdraw £{amount:.2f}...\n{error}")
+
+    def transfer(self, user, amount):
+        try:
+            # first check enough funds to make the transfer
+            self.enough_funds(amount)
+            user.balance += amount  # update the recipients account
+            self.balance -= amount  # adjust senders account
+            print(f"\nTransferring £{amount:.2f} to {user.acc_name}'s account...\nTransfer complete.")
+            print(f"Account balance: £{self.balance:.2f}")
+        except FundsException as error:
+            # handle cases of insufficient funds using our exception class
+            print(f"Attempting to transfer £{amount:.2f} to {user}' account...\n{error}.")
