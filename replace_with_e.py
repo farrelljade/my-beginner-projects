@@ -20,4 +20,4 @@ user_input = input("Type a number. The number will be converted to 'e' upto the 
 output_string = replace_with_e(user_input)
 
 # Display the modified string
-print("Replaced with 'e' until period: ", output_string)
+print(f"Replaced with 'e' until period: {output_string}")
