@@ -69,7 +69,7 @@ class UserInterface:
     def switch_acc(self, recip_acc):
         user_acc = input("\nWhat account to switch to: ")
         if user_acc in self.user_accounts:
-            return user_acc
+            self.bank_menu(user_acc)
         else:
             print(f"{user_acc} not found.")
 
