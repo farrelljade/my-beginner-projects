@@ -45,6 +45,14 @@ class BankAccount:
             recipient.deposit(amount)
         else:
             raise FundsException(f"Insufficient funds. Account balance: £{self.balance}")
+        
+# Added an inheritance class 'SavingAccount'        
+class SavingAccount(BankAccount):
+    def __init__(self, acc_name, balance):
+        super().__init__(acc_name, balance)
+
+    def deposit(self, amount):
+        self.balance += (amount * 1.10)
 
 class UserInterface:
     def __init__(self):
@@ -52,11 +60,9 @@ class UserInterface:
         self.recip_acc = None
     
     # whenever a new bank account created its added to the dict
-    def create_account(self, acc_name, balance=0):
+    def create_account(self, acc_name, acc_type):
         if acc_name not in self.user_accounts:
-            account = BankAccount(acc_name, balance)  # create a new instance of the bank account class
-            self.user_accounts[acc_name] = account  # add a new account into the dict
-            return account
+            self.user_accounts[acc_name] = acc_type
         else:
             print(f"Account with {acc_name} already exists.")
             return self.user_accounts[acc_name]  # return the bank account already stored
@@ -66,7 +72,7 @@ class UserInterface:
         if user_choice == "2" or user_choice == "return card":
             raise ReturnCard
         
-    def switch_acc(self, recip_acc):
+    def switch_acc(self):
         user_acc = input("\nWhat account to switch to: ")
         if user_acc in self.user_accounts:
             self.bank_menu(user_acc)
@@ -121,11 +127,16 @@ class UserInterface:
 ui = UserInterface()
 
 while True:
-    acc_name = input("Enter your account name (or press Enter to exit): ")
+    acc_name = input("\nEnter your account name (or press Enter to exit): ")
     if not acc_name:
         break
 
-    user_account = ui.create_account(acc_name)
+    user_account = input("What type of account would you like to setup:\n1. Bank Account\n2. Savings Account\n").lower()
+
+    if user_account in ["1", "bank account", "bankaccount"]:
+        ui.create_account(acc_name, BankAccount(acc_name, 0))
+    elif user_account in ["2", "savings acoount", "savingsaccount"]:
+        ui.create_account(acc_name, SavingAccount(acc_name, 0))
 
     while True:
         try:
