@@ -30,9 +30,9 @@ menu = {
     '9': {'item': 'Small Drink', 'price': 1.25}, 
 }
 
-print("Menu:")
+print("Menu".center(20, '='))
 for k, v in menu.items():
-    print(f"{k}. {v['item']} - £{v['price']:.2f}")
+    print(f"{k}. {v['item'].ljust(20, '.')}£{v['price']:.2f}")
 
 total = 0
 order_num = 0
@@ -43,7 +43,7 @@ while True:
         if key in menu:
             order_num += 1
             total += menu[key]['price']
-            print(f"Order No: {order_num} {menu[key]['item']} Price: £{menu[key]['price']:.2f}")
+            print(f"Order {order_num}: {menu[key]['item'].ljust(20, '.')}£{menu[key]['price']:.2f}")
     extra = input("\nWould you like anything else? ")
     if extra in ["no", "n", ""]:
         print("Thank you for your order.")
