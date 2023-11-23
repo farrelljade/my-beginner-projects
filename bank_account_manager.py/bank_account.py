@@ -46,13 +46,25 @@ class BankAccount:
         else:
             raise FundsException(f"Insufficient funds. Account balance: £{self.balance}")
         
-# Added an inheritance class 'SavingAccount'        
+# Inheritance class        
 class SavingAccount(BankAccount):
     def __init__(self, acc_name, balance):
         super().__init__(acc_name, balance)
 
     def deposit(self, amount):
         self.balance += (amount * 1.10)
+
+# Inheritance class
+class CashIsaAccount(SavingAccount):
+    def __init__(self, acc_name, balance):
+        super().__init__(acc_name, balance)
+        self.service_fee = 5
+
+    def withdraw(self, amount):
+        if self.balance >= amount + self.service_fee:
+            self.balance -= amount + self.service_fee
+        else:
+            raise FundsException(f"Insufficient funds. Account balance: £{self.balance}")
 
 class UserInterface:
     def __init__(self):
@@ -131,12 +143,14 @@ while True:
     if not acc_name:
         break
 
-    user_account = input("What type of account would you like to setup:\n1. Bank Account\n2. Savings Account\n").lower()
+    user_account = input("What type of account would you like to setup:\n1. Bank Account\n2. Savings Account\n3. Cash ISA Account\n\n").lower()
 
     if user_account in ["1", "bank account", "bankaccount"]:
         ui.create_account(acc_name, BankAccount(acc_name, 0))
     elif user_account in ["2", "savings acoount", "savingsaccount"]:
         ui.create_account(acc_name, SavingAccount(acc_name, 0))
+    elif user_account in ["3", "cash isa account", "cashisaaccount"]:
+        ui.create_account(acc_name, CashIsaAccount(acc_name, 0))
 
     while True:
         try:
