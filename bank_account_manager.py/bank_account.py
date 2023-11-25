@@ -32,7 +32,6 @@ class BankAccount:
         with open("account_names.json", "r") as file:
             data = json.load(file)
             print(f"\n{acc_name}: Account Balance: £{data[acc_name]['balance']:.2f}")
-    #     return self.data
 
     def deposit(self, amount):
         with open("account_names.json", "r+") as file:
@@ -41,15 +40,23 @@ class BankAccount:
             file.seek(0)  # Move the file pointer to the beginning
             json.dump(data, file)  # Write the updated data back to the file
         return data[acc_name]['balance']  # Return the updated balance
-    
-        # self.balance += amount
-
 
     def withdraw(self, amount):
-        if self.balance >= amount:
-            self.balance -= amount
-        else:
-            raise FundsException(f"Insufficient funds. Account balance: £{self.balance}")
+        with open("account_names.json", "r+") as file:
+            data = json.load(file)
+            if data[acc_name]['balance'] >= amount:
+                data[acc_name]['balance'] -= amount
+                file.seek(0)
+                json.dump(data, file)
+                file.truncate()
+            else:
+                raise FundsException(f"Insufficient funds. Account balance: £{data[acc_name]['balance']}")
+
+            return data[acc_name]['balance']
+        # if self.balance >= amount:
+        #     self.balance -= amount
+            # else:
+            #     raise FundsException(f"Insufficient funds. Account balance: £{data[acc_name['balance']]}")
 
     def transfer(self, recipient, amount):
         if self.balance >= amount:
@@ -159,19 +166,16 @@ class UserInterface(BankAccount):
             
             if user_choice in ["1", "check balance", "checkbalance"]:
                 self.check_balance()
-                # print(f"\n{acc_name}, your current balance is: £{account:.2f}")
-                # print(f"\n{acc_name}, your current balance is: £{account.check_balance():.2f}")
             elif user_choice in ["2", "deposit"]:
                 amount = int(input("\nDeposit amount: "))
                 self.deposit(amount)
-                # self.data["balance"] = amount
-                # account.deposit(amount)
-                print(f"Depositing £{amount:.2f}...\nDeposit complete.\n{acc_name}'s balance is: £{account:.2f}")
+                print(f"Depositing £{amount:.2f}...\nDeposit complete.")
             elif user_choice in ["3", "withdrawal", "withdraw"]:
                 amount = int(input("\nWithdrawal amount: "))
                 try:
-                   account.withdraw(amount)
-                   print(f"Withdrawal complete. {acc_name}'s balance is now: £{account.check_balance():.2f}")
+                   self.withdraw(amount)
+                   print(f"Withdrawal complete.")
+                   self.check_balance()
                 except FundsException as error:
                     print(f"Attempting to withdraw £{amount}...\n{error}")
             elif user_choice in ["4", "transfer"]:
