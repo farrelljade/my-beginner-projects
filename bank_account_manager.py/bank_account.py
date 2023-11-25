@@ -1,3 +1,5 @@
+import json
+
 """
 Banking System Project
 
@@ -27,10 +29,20 @@ class BankAccount:
         self.balance = balance
 
     def check_balance(self):
-        return self.balance
+        with open("account_names.json", "r") as file:
+            data = json.load(file)
+            print(f"\n{acc_name}: Account Balance: £{data[acc_name]['balance']:.2f}")
+    #     return self.data
 
     def deposit(self, amount):
-        self.balance += amount
+        with open("account_names.json", "r+") as file:
+            data = json.load(file)
+            data[acc_name]['balance'] += amount  # Update the balance
+            file.seek(0)  # Move the file pointer to the beginning
+            json.dump(data, file)  # Write the updated data back to the file
+        return data[acc_name]['balance']  # Return the updated balance
+    
+        # self.balance += amount
 
 
     def withdraw(self, amount):
@@ -65,19 +77,56 @@ class CashIsaAccount(SavingAccount):
             self.balance -= amount + self.service_fee
         else:
             raise FundsException(f"Insufficient funds. Account balance: £{self.balance}")
+        
+'''
+# Load existing accounts from the JSON file
+with open("bank_accounts.json", "r") as file:
+    data = json.load(file)
 
-class UserInterface:
+# Create a new account
+new_account = BankAccount("Eve", 750)
+
+# Add the new account to the existing data
+data["Eve"] = new_account.__dict__
+
+# Save the updated accounts to the JSON file
+with open("bank_accounts.json", "w") as file:
+    json.dump(data, file)
+
+'''
+
+class UserInterface(BankAccount):
     def __init__(self):
-        self.user_accounts = {}
-        self.recip_acc = None
+        self.load_data()
+
+    def load_data(self):
+        try:
+            with open("account_names.json", "r") as file:
+                self.data = json.load(file)
+        except FileNotFoundError:
+            self.data = {}
+        except json.JSONDecodeError:
+            self.data = {}
+
+        # self.user_accounts = {}
+        # self.recip_acc = None
     
     # whenever a new bank account created its added to the dict
     def create_account(self, acc_name, acc_type):
-        if acc_name not in self.user_accounts:
-            self.user_accounts[acc_name] = acc_type
+        new_account = BankAccount(acc_name, 0)
+        if acc_name not in self.data:
+            self.data[acc_name] = new_account.__dict__
         else:
             print(f"Account with {acc_name} already exists.")
-            return self.user_accounts[acc_name]  # return the bank account already stored
+            return self.data[acc_name]  # return the bank account already stored
+
+        with open("account_names.json", "w") as file:
+            json.dump(self.data, file)
+        # if acc_name not in self.user_accounts:
+        #     self.user_accounts[acc_name] = acc_type
+        # else:
+        #     print(f"Account with {acc_name} already exists.")
+        #     return self.user_accounts[acc_name]  # return the bank account already stored
         
     def back_to_menu(self):
         user_choice = input("\n1. Main menu\n2. Return card\nEnter your choice: ").lower()
@@ -86,7 +135,8 @@ class UserInterface:
         
     def switch_acc(self):
         user_acc = input("\nWhat account to switch to: ")
-        if user_acc in self.user_accounts:
+        if user_acc in self.load_data:
+        # if user_acc in self.user_accounts:
             self.bank_menu(user_acc)
         else:
             print(f"{user_acc} not found.")
@@ -105,14 +155,18 @@ class UserInterface:
             if user_choice in ["5", "return card", "returncard"]:
                 raise ReturnCard
             
-            account = self.user_accounts.get(acc_name)
+            account = self.data.get(acc_name, {}).get('balance')
             
             if user_choice in ["1", "check balance", "checkbalance"]:
-                print(f"\n{acc_name}, your current balance is: £{account.check_balance():.2f}")
+                self.check_balance()
+                # print(f"\n{acc_name}, your current balance is: £{account:.2f}")
+                # print(f"\n{acc_name}, your current balance is: £{account.check_balance():.2f}")
             elif user_choice in ["2", "deposit"]:
                 amount = int(input("\nDeposit amount: "))
-                account.deposit(amount)
-                print(f"Depositing £{amount:.2f}...\nDeposit complete.\n{acc_name}'s balance is: £{account.check_balance():.2f}")
+                self.deposit(amount)
+                # self.data["balance"] = amount
+                # account.deposit(amount)
+                print(f"Depositing £{amount:.2f}...\nDeposit complete.\n{acc_name}'s balance is: £{account:.2f}")
             elif user_choice in ["3", "withdrawal", "withdraw"]:
                 amount = int(input("\nWithdrawal amount: "))
                 try:
@@ -134,7 +188,7 @@ class UserInterface:
                 else:
                     print("Recipient not found.")
             elif user_choice in ["6", "switch account", "switchaccount"]:
-                self.switch_acc(self.recip_acc)
+                self.switch_acc()
 
 ui = UserInterface()
 
