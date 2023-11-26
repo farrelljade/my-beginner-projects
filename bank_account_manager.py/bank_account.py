@@ -31,7 +31,7 @@ class BankAccount:
     def check_balance(self):
         with open('account_names.json', 'r') as file:
             data = json.load(file)
-            print(f"\n{acc_name}: Account Balance: £{data[acc_name]['balance']:.2f}")
+            print(f"\n{data[acc_name]['acc_name']}: Account Balance: £{data[acc_name]['balance']:.2f}")
 
     def deposit(self, amount):
         with open('account_names.json', 'r+') as file:
@@ -87,7 +87,8 @@ class CashIsaAccount(SavingAccount):
             raise FundsException(f"Insufficient funds. Account balance: £{self.balance}")
 
 class UserInterface(BankAccount):
-    def __init__(self):
+    def __init__(self, acc_name, balance):
+        super().__init__(acc_name, balance)
         self.load_data()
 
     def load_data(self):
@@ -99,13 +100,13 @@ class UserInterface(BankAccount):
         except json.JSONDecodeError:
             self.data = {}
     
-    # whenever a new bank account created its added to the dict
-    def create_account(self, acc_name, acc_type):
+    # whenever a new bank account created its added to a separate json file
+    def create_account(self, acc_name):
         new_account = BankAccount(acc_name, 0)
         if acc_name not in self.data:
             self.data[acc_name] = new_account.__dict__
         else:
-            print(f"Account with {acc_name} already exists.")
+            print(f"Account with {self.acc_name} already exists.")
             return self.data[acc_name]  # return the bank account already stored
 
         with open('account_names.json', 'w') as file:
@@ -117,12 +118,14 @@ class UserInterface(BankAccount):
             raise ReturnCard
         
     def switch_acc(self):
-        user_acc = input("\nWhat account to switch to: ")
-        if user_acc in self.load_data:
-        # if user_acc in self.user_accounts:
-            self.bank_menu(user_acc)
-        else:
-            print(f"{user_acc} not found.")
+        switched_acc = input("What account to switch to: ")
+        with open('account_names.json', 'r') as file:
+            data = json.load(file)
+            if switched_acc in data:
+                self.acc_name = switched_acc
+                self.bank_menu(self.acc_name)
+            else:
+                print(f"{switched_acc} not found.")
 
     def bank_menu(self, acc_name):
         while True:
@@ -137,8 +140,6 @@ class UserInterface(BankAccount):
             user_choice = input("Enter your choice: ").lower()
             if user_choice in ["5", "return card", "returncard"]:
                 raise ReturnCard
-            
-            #account = self.data.get(acc_name, {}).get('balance')
             
             if user_choice in ["1", "check balance", "checkbalance"]:
                 self.check_balance()
@@ -156,22 +157,19 @@ class UserInterface(BankAccount):
                     print(f"Attempting to withdraw £{amount}...\n{error}")
             elif user_choice in ["4", "transfer"]:
                 recipient_name = input("\nWhose account to transfer to: ")
-                with open('account_names.json', 'r') as file:
-                    data = json.load(file)
-                    if recipient_name in data:
-                        amount = float(input("\nTransfer amount: "))
-                        try:
-                            self.transfer(recipient_name, amount)
-                            print(f"Transfer complete.\n{acc_name}'s balance: £{data[acc_name]['balance']:.2f}")
-                            print(f"{recipient_name}'s balance: {data[recipient_name]['balance']:.2f}")
-                        except FundsException as error:
-                            print(f"Attempting to transfer £{amount}...\n{error}")
-                    else:
-                        print("Recipient not found.")
+                amount = float(input("\nTransfer amount: "))
+                try:
+                    self.transfer(recipient_name, amount)
+                    with open('account_names.json', 'r') as file:
+                        data = json.load(file)
+                    print(f"Transfer complete.\n{acc_name}'s balance: £{data[acc_name]['balance']:.2f}")
+                    print(f"{recipient_name}'s balance: £{data[recipient_name]['balance']:.2f}")
+                except FundsException as error:
+                    print(f"Attempting to transfer £{amount}...\n{error}")
             elif user_choice in ["6", "switch account", "switchaccount"]:
                 self.switch_acc()
 
-ui = UserInterface()
+ui = UserInterface(acc_name=None, balance=0)
 
 while True:
     acc_name = input("\nEnter your account name (or press Enter to exit): ")
@@ -181,7 +179,7 @@ while True:
     user_account = input("What type of account would you like to setup:\n1. Bank Account\n2. Savings Account\n3. Cash ISA Account\n\n").lower()
 
     if user_account in ["1", "bank account", "bankaccount"]:
-        ui.create_account(acc_name, BankAccount(acc_name, 0))
+        ui.create_account(acc_name)
     elif user_account in ["2", "savings acoount", "savingsaccount"]:
         ui.create_account(acc_name, SavingAccount(acc_name, 0))
     elif user_account in ["3", "cash isa account", "cashisaaccount"]:
