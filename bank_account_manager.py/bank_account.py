@@ -162,8 +162,8 @@ class UserInterface(BankAccount):
                     self.transfer(recipient_name, amount)
                     with open('account_names.json', 'r') as file:
                         data = json.load(file)
-                    print(f"Transfer complete.\n{acc_name}'s balance: £{data[acc_name]['balance']:.2f}")
-                    print(f"{recipient_name}'s balance: £{data[recipient_name]['balance']:.2f}")
+                        print(f"Transfer complete.\n{acc_name}'s balance: £{data[acc_name]['balance']:.2f}")
+                        print(f"{recipient_name}'s balance: £{data[recipient_name]['balance']:.2f}")
                 except FundsException as error:
                     print(f"Attempting to transfer £{amount}...\n{error}")
             elif user_choice in ["6", "switch account", "switchaccount"]:
