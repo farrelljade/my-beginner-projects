@@ -30,41 +30,41 @@ class BankAccount:
 
     def check_balance(self):
         with open('account_names.json', 'r') as file:
-            data = json.load(file)
-            print(f"\n{data[acc_name]['acc_name']}: Account Balance: £{data[acc_name]['balance']:.2f}")
+            user_balance = json.load(file)
+            print(f"\n{user_balance['acc_name']}: Account Balance: £{user_balance['balance']:.2f}")
 
     def deposit(self, amount):
         with open('account_names.json', 'r+') as file:
-            data = json.load(file)
-            data[acc_name]['balance'] += amount  # Update the balance
+            user_deposit = json.load(file)
+            user_deposit['balance'] += amount  # Update the balance
             file.seek(0)  # Move the file pointer to the beginning
-            json.dump(data, file)  # Write the updated data back to the file
-        return data[acc_name]['balance']  # Return the updated balance
+            json.dump(user_deposit, file)  # Write the updated data back to the file
+        return user_deposit['balance']  # Return the updated balance
 
     def withdraw(self, amount):
         with open('account_names.json', 'r+') as file:
             data = json.load(file)
-            if data[acc_name]['balance'] >= amount:
-                data[acc_name]['balance'] -= amount
+            if data['balance'] >= amount:
+                data['balance'] -= amount
                 file.seek(0)
                 json.dump(data, file)
                 file.truncate()  # Truncate any extra content
             else:
-                raise FundsException(f"Insufficient funds. Account balance: £{data[acc_name]['balance']}")
+                raise FundsException(f"Insufficient funds. Account balance: £{data['balance']}")
 
-            return data[acc_name]['balance']
+            return data['balance']
 
     def transfer(self, recipient, amount):
         with open('account_names.json', 'r+') as file:
             data = json.load(file)
-            if data[acc_name]['balance'] >= amount:
-                data[acc_name]['balance'] -= amount
-                data[recipient]['balance'] += amount
+            if data['balance'] >= amount:
+                data['balance'] -= amount
+                data['balance'] += amount
                 file.seek(0)
                 json.dump(data, file)
                 file.truncate()
             else:
-                raise FundsException(f"Insufficient funds. Account balance: £{data[acc_name]['balance']}")
+                raise FundsException(f"Insufficient funds. Account balance: £{data['balance']}")
 
 class UserInterface(BankAccount):
     def __init__(self, acc_name, balance):
@@ -82,15 +82,22 @@ class UserInterface(BankAccount):
     
     # whenever a new bank account created its added to a separate json file
     def create_account(self, acc_name):
-        new_account = BankAccount(acc_name, 0)
-        if acc_name not in self.data:
-            self.data[acc_name] = new_account.__dict__
-        else:
-            print(f"Account with {self.acc_name} already exists.")
-            return self.data[acc_name]  # return the bank account already stored
+        # if acc_name not in self.data:
+        with open('account_names.json', 'r') as file:
+            existing_data = json.load(file)
+            if acc_name not in self.data:
+
+                self.data = BankAccount(acc_name, 0).__dict__
+                existing_data.update(self.data)
 
         with open('account_names.json', 'w') as file:
-            json.dump(self.data, file)
+            json.dump(existing_data, file)
+    # else:
+    #     print(f"Account with {self.acc_name} already exists.")
+    #     return self.data[acc_name]  # return the bank account already stored
+
+        # with open('account_names.json', 'w') as file:
+        #     json.dump(self.data, file)
         
     def back_to_menu(self):
         user_choice = input("\n1. Main menu\n2. Return card\nEnter your choice: ").lower()
@@ -142,7 +149,7 @@ class UserInterface(BankAccount):
                     self.transfer(recipient_name, amount)
                     with open('account_names.json', 'r') as file:
                         data = json.load(file)
-                        print(f"Transfer complete.\n{acc_name}'s balance: £{data[acc_name]['balance']:.2f}")
+                        print(f"Transfer complete.\n{acc_name}'s balance: £{data['balance']:.2f}")
                         print(f"{recipient_name}'s balance: £{data[recipient_name]['balance']:.2f}")
                 except FundsException as error:
                     print(f"Attempting to transfer £{amount}...\n{error}")
